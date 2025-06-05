@@ -4,59 +4,79 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pill, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import AddMedicationForm, { MedicationFormValues } from './AddMedicationForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+const initialMedications = [
+  {
+    id: '1',
+    name: 'Lisinopril',
+    dosage: '10mg',
+    frequency: 'Once daily',
+    prescribingDoctor: 'Dr. Sarah Johnson',
+    startDate: '2024-01-15',
+    instructions: 'Take with food in the morning',
+    isActive: true,
+    nextDose: '2024-06-05T08:00:00',
+    sideEffects: 'May cause dizziness'
+  },
+  {
+    id: '2',
+    name: 'Metformin',
+    dosage: '500mg',
+    frequency: 'Twice daily',
+    prescribingDoctor: 'Dr. Michael Chen',
+    startDate: '2024-02-01',
+    instructions: 'Take with meals',
+    isActive: true,
+    nextDose: '2024-06-05T12:00:00',
+    sideEffects: 'May cause stomach upset'
+  },
+  {
+    id: '3',
+    name: 'Vitamin D3',
+    dosage: '1000 IU',
+    frequency: 'Daily',
+    prescribingDoctor: 'Dr. Sarah Johnson',
+    startDate: '2024-03-01',
+    instructions: 'Take with largest meal',
+    isActive: true,
+    nextDose: '2024-06-05T18:00:00',
+    sideEffects: 'Generally well tolerated'
+  },
+  {
+    id: '4',
+    name: 'Aspirin',
+    dosage: '81mg',
+    frequency: 'Daily',
+    prescribingDoctor: 'Dr. Emily Rodriguez',
+    startDate: '2024-01-01',
+    endDate: '2024-05-01',
+    instructions: 'Low dose for heart protection',
+    isActive: false,
+    sideEffects: 'May cause stomach irritation'
+  }
+];
 
 const MedicationsPage = () => {
-  const [medications] = useState([
-    {
-      id: '1',
-      name: 'Lisinopril',
-      dosage: '10mg',
-      frequency: 'Once daily',
-      prescribingDoctor: 'Dr. Sarah Johnson',
-      startDate: '2024-01-15',
-      instructions: 'Take with food in the morning',
-      isActive: true,
-      nextDose: '2024-06-05T08:00:00',
-      sideEffects: 'May cause dizziness'
-    },
-    {
-      id: '2',
-      name: 'Metformin',
-      dosage: '500mg',
-      frequency: 'Twice daily',
-      prescribingDoctor: 'Dr. Michael Chen',
-      startDate: '2024-02-01',
-      instructions: 'Take with meals',
-      isActive: true,
-      nextDose: '2024-06-05T12:00:00',
-      sideEffects: 'May cause stomach upset'
-    },
-    {
-      id: '3',
-      name: 'Vitamin D3',
-      dosage: '1000 IU',
-      frequency: 'Daily',
-      prescribingDoctor: 'Dr. Sarah Johnson',
-      startDate: '2024-03-01',
-      instructions: 'Take with largest meal',
-      isActive: true,
-      nextDose: '2024-06-05T18:00:00',
-      sideEffects: 'Generally well tolerated'
-    },
-    {
-      id: '4',
-      name: 'Aspirin',
-      dosage: '81mg',
-      frequency: 'Daily',
-      prescribingDoctor: 'Dr. Emily Rodriguez',
-      startDate: '2024-01-01',
-      endDate: '2024-05-01',
-      instructions: 'Low dose for heart protection',
-      isActive: false,
-      sideEffects: 'May cause stomach irritation'
-    }
-  ]);
+  const [medications, setMedications] = useState(initialMedications);
+  const [showAddMedicationDialog, setShowAddMedicationDialog] = useState(false);
 
+  const handleAddMedication = (data: MedicationFormValues) => {
+    const newMedication = {
+      ...data,
+      id: Date.now().toString(),
+      isActive: true,
+      nextDose: new Date(data.startDate).toISOString(),
+      sideEffects: data.sideEffects || '',
+      instructions: data.instructions || '',
+    };
+    setMedications(prevMeds => [newMedication, ...prevMeds]);
+    setShowAddMedicationDialog(false);
+  };
+
+  const activeMedications = medications.filter(med => med.isActive);
+  const inactiveMedications = medications.filter(med => !med.isActive);
   const getFrequencyColor = (frequency: string) => {
     if (frequency.includes('Once')) return 'bg-green-100 text-green-800';
     if (frequency.includes('Twice')) return 'bg-blue-100 text-blue-800';
@@ -80,20 +100,33 @@ const MedicationsPage = () => {
           <h1 className="text-3xl font-bold text-purple-900">Medications</h1>
           <p className="text-purple-600 mt-1">Manage your prescriptions and supplements</p>
         </div>
-        <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Medication
-        </Button>
+        <Dialog open={showAddMedicationDialog} onOpenChange={setShowAddMedicationDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Medication
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Add New Medication</DialogTitle>
+            </DialogHeader>
+            <AddMedicationForm
+              onSubmit={handleAddMedication}
+              onCancel={() => setShowAddMedicationDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Active Medications */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-purple-800 mb-4 flex items-center">
           <Pill className="mr-2 h-5 w-5 text-purple-600" />
-          Active Medications
+          Active Medications ({activeMedications.length})
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {medications.filter(med => med.isActive).map((medication) => (
+          {activeMedications.map((medication) => (
             <Card key={medication.id} className="border-l-4 border-l-purple-500 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                 <CardTitle className="flex items-center justify-between">
@@ -142,10 +175,10 @@ const MedicationsPage = () => {
       <div>
         <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
           <AlertTriangle className="mr-2 h-5 w-5 text-gray-500" />
-          Inactive Medications
+          Inactive Medications ({inactiveMedications.length})
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {medications.filter(med => !med.isActive).map((medication) => (
+          {inactiveMedications.map((medication) => (
             <Card key={medication.id} className="border-l-4 border-l-gray-400 opacity-75">
               <CardHeader className="bg-gray-100">
                 <CardTitle className="flex items-center justify-between text-gray-700">
