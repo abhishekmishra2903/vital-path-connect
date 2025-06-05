@@ -4,55 +4,73 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, MapPin, User, Plus, Phone } from 'lucide-react';
+import AddAppointmentForm, { AppointmentFormValues } from './AddAppointmentForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+const initialAppointments = [
+  {
+    id: '1',
+    providerName: 'Dr. Sarah Johnson',
+    appointmentDate: '2024-06-10T10:00:00',
+    duration: 30,
+    appointmentType: 'routine_checkup',
+    status: 'confirmed',
+    location: 'Heart Care Center, Room 201',
+    notes: 'Annual physical examination',
+    specialty: 'Cardiology'
+  },
+  {
+    id: '2',
+    providerName: 'Dr. Michael Chen',
+    appointmentDate: '2024-06-15T14:30:00',
+    duration: 45,
+    appointmentType: 'follow_up',
+    status: 'scheduled',
+    location: 'Downtown Medical Plaza, Suite 305',
+    notes: 'Follow-up for diabetes management',
+    specialty: 'Endocrinology'
+  },
+  {
+    id: '3',
+    providerName: 'Dr. Emily Rodriguez',
+    appointmentDate: '2024-06-20T09:15:00',
+    duration: 60,
+    appointmentType: 'consultation',
+    status: 'scheduled',
+    location: 'Wellness Center, Floor 2',
+    notes: 'Initial consultation for joint pain',
+    specialty: 'Rheumatology'
+  },
+  {
+    id: '4',
+    providerName: 'Dr. James Wilson',
+    appointmentDate: '2024-05-28T11:00:00',
+    duration: 30,
+    appointmentType: 'lab_work',
+    status: 'completed',
+    location: 'Lab Services Center',
+    notes: 'Blood work for cholesterol levels',
+    specialty: 'Laboratory'
+  }
+];
 
 const AppointmentsPage = () => {
-  const [appointments] = useState([
-    {
-      id: '1',
-      providerName: 'Dr. Sarah Johnson',
-      appointmentDate: '2024-06-10T10:00:00',
-      duration: 30,
-      appointmentType: 'routine_checkup',
-      status: 'confirmed',
-      location: 'Heart Care Center, Room 201',
-      notes: 'Annual physical examination',
-      specialty: 'Cardiology'
-    },
-    {
-      id: '2',
-      providerName: 'Dr. Michael Chen',
-      appointmentDate: '2024-06-15T14:30:00',
-      duration: 45,
-      appointmentType: 'follow_up',
-      status: 'scheduled',
-      location: 'Downtown Medical Plaza, Suite 305',
-      notes: 'Follow-up for diabetes management',
-      specialty: 'Endocrinology'
-    },
-    {
-      id: '3',
-      providerName: 'Dr. Emily Rodriguez',
-      appointmentDate: '2024-06-20T09:15:00',
-      duration: 60,
-      appointmentType: 'consultation',
-      status: 'scheduled',
-      location: 'Wellness Center, Floor 2',
-      notes: 'Initial consultation for joint pain',
-      specialty: 'Rheumatology'
-    },
-    {
-      id: '4',
-      providerName: 'Dr. James Wilson',
-      appointmentDate: '2024-05-28T11:00:00',
-      duration: 30,
-      appointmentType: 'lab_work',
-      status: 'completed',
-      location: 'Lab Services Center',
-      notes: 'Blood work for cholesterol levels',
-      specialty: 'Laboratory'
-    }
-  ]);
+  const [appointments, setAppointments] = useState(initialAppointments);
+  const [showAddAppointmentDialog, setShowAddAppointmentDialog] = useState(false);
 
+  const handleAddAppointment = (data: AppointmentFormValues) => {
+    const newAppointment = {
+      ...data,
+      id: Date.now().toString(),
+      appointmentDate: `${data.appointmentDate}T${data.appointmentTime}:00`, // Combine date and time
+      status: 'scheduled', // Default status for new appointments
+      duration: Number(data.duration),
+      notes: data.notes || '',
+      specialty: data.specialty || '',
+    };
+    setAppointments(prevAppointments => [newAppointment, ...prevAppointments]);
+    setShowAddAppointmentDialog(false); // Close the dialog
+  };
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
@@ -106,10 +124,23 @@ const AppointmentsPage = () => {
           <h1 className="text-3xl font-bold text-blue-900">Appointments</h1>
           <p className="text-blue-600 mt-1">Manage your healthcare appointments</p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Schedule Appointment
-        </Button>
+        <Dialog open={showAddAppointmentDialog} onOpenChange={setShowAddAppointmentDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700">
+              <Plus className="mr-2 h-4 w-4" />
+              Schedule Appointment
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Schedule New Appointment</DialogTitle>
+            </DialogHeader>
+            <AddAppointmentForm
+              onSubmit={handleAddAppointment}
+              onCancel={() => setShowAddAppointmentDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Upcoming Appointments */}

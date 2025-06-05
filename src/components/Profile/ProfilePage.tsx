@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,25 +10,36 @@ import { User, Phone, Calendar, Heart, Shield, Edit, Save, Camera } from 'lucide
 
 const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    dateOfBirth: '1985-03-15',
-    phone: '+1 (555) 123-4567',
-    email: 'john.doe@email.com',
-    emergencyContactName: 'Jane Doe',
-    emergencyContactPhone: '+1 (555) 987-6543',
-    medicalRecordNumber: 'MRN-12345',
-    bloodType: 'O+',
-    allergies: 'Penicillin, Shellfish',
-    chronicConditions: 'Hypertension, Type 2 Diabetes',
-    preferredPharmacy: 'CVS Pharmacy - Main Street',
-    insuranceProvider: 'Blue Cross Blue Shield',
-    insurancePolicyNumber: 'BCBS-789456123'
+  const [profile, setProfile] = useState(() => {
+    const savedProfile = localStorage.getItem('userProfile');
+    if (savedProfile) {
+      return JSON.parse(savedProfile);
+    }
+    return {
+      firstName: 'John',
+      lastName: 'Doe',
+      dateOfBirth: '1985-03-15',
+      phone: '+1 (555) 123-4567',
+      email: 'john.doe@email.com',
+      emergencyContactName: 'Jane Doe',
+      emergencyContactPhone: '+1 (555) 987-6543',
+      medicalRecordNumber: 'MRN-12345',
+      bloodType: 'O+',
+      allergies: 'Penicillin, Shellfish',
+      chronicConditions: 'Hypertension, Type 2 Diabetes',
+      preferredPharmacy: 'CVS Pharmacy - Main Street',
+      insuranceProvider: 'Blue Cross Blue Shield',
+      insurancePolicyNumber: 'BCBS-789456123'
+    };
   });
 
   const handleInputChange = (field: string, value: string) => {
     setProfile(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveChanges = () => {
+    localStorage.setItem('userProfile', JSON.stringify(profile));
+    setIsEditing(false);
   };
 
   const calculateAge = (birthDate: string) => {
@@ -57,7 +68,7 @@ const ProfilePage = () => {
             <p className="text-indigo-600 mt-1">Manage your personal and health information</p>
           </div>
           <Button 
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={isEditing ? handleSaveChanges : () => setIsEditing(true)}
             className={isEditing ? "bg-green-600 hover:bg-green-700" : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"}
           >
             {isEditing ? (
